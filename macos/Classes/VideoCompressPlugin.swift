@@ -66,7 +66,7 @@ public class VideoCompressPlugin: NSObject, FlutterPlugin {
         assetImgGenerate.appliesPreferredTrackTransform = true
         
         let timeScale = CMTimeScale(track.nominalFrameRate)
-        let time = CMTimeMakeWithSeconds(Float64(truncating: position),preferredTimescale: timeScale)
+        let time = CMTimeMakeWithSeconds(Float64(truncating: position) / 1000,preferredTimescale: timeScale)
         guard let img = try? assetImgGenerate.copyCGImage(at:time, actualTime: nil) else {
             return nil
         }
@@ -191,12 +191,12 @@ public class VideoCompressPlugin: NSObject, FlutterPlugin {
         let timescale = sourceVideoAsset.duration.timescale
         let minStartTime = Double(startTime ?? 0)
         
-        let videoDuration = sourceVideoAsset.duration.seconds
+        let videoDuration = sourceVideoAsset.duration.seconds * 1000
         let minDuration = Double(duration ?? videoDuration)
         let maxDurationTime = minStartTime + minDuration < videoDuration ? minDuration : videoDuration
         
-        let cmStartTime = CMTimeMakeWithSeconds(minStartTime, preferredTimescale: timescale)
-        let cmDurationTime = CMTimeMakeWithSeconds(maxDurationTime, preferredTimescale: timescale)
+        let cmStartTime = CMTimeMakeWithSeconds(minStartTime / 1000.0, preferredTimescale: timescale)
+        let cmDurationTime = CMTimeMakeWithSeconds(maxDurationTime / 1000.0, preferredTimescale: timescale)
         let timeRange: CMTimeRange = CMTimeRangeMake(start: cmStartTime, duration: cmDurationTime)
         
         let isIncludeAudio = includeAudio != nil ? includeAudio! : true
@@ -215,9 +215,7 @@ public class VideoCompressPlugin: NSObject, FlutterPlugin {
             exporter.videoComposition = videoComposition
         }
         
-        if !isIncludeAudio {
-            exporter.timeRange = timeRange
-        }
+        exporter.timeRange = timeRange
         
         Utility.deleteFile(compressionUrl.absoluteString)
         
