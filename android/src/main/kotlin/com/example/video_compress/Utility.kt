@@ -43,20 +43,12 @@ class Utility(private val channelName: String) {
         val widthStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
         val heightStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
         val duration = java.lang.Long.parseLong(durationStr)
-        var width = java.lang.Long.parseLong(widthStr)
-        var height = java.lang.Long.parseLong(heightStr)
+        val width = java.lang.Long.parseLong(widthStr)
+        val height = java.lang.Long.parseLong(heightStr)
         val filesize = file.length()
-        val orientation = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        val orientation =
             retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
-        } else {
-            null
-        }
         val ori = orientation?.toIntOrNull()
-        if (ori != null && isLandscapeImage(ori)) {
-            val tmp = width
-            width = height
-            height = tmp
-        }
 
         retriever.release()
 
@@ -128,8 +120,8 @@ class Utility(private val channelName: String) {
         return fileName
     }
 
-    fun deleteAllCache(context: Context, result: MethodChannel.Result) {
+    fun deleteAllCache(context: Context): Boolean {
         val dir = context.getExternalFilesDir("video_compress")
-        result.success(dir?.deleteRecursively())
+        return dir?.deleteRecursively() ?: false
     }
 }
