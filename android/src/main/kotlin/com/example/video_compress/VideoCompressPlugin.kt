@@ -140,15 +140,24 @@ class VideoCompressPlugin : MethodCallHandler, FlutterPlugin {
                 }
 
                 val dataSource = if (startTime != null || duration != null){
+                    val mediaInfo = Utility(channelName).getMediaInfoJson(context, path)
+                    val videoDurationMs = mediaInfo.optLong("duration", 0)
+                    val videoDurationUs = videoDurationMs * 1000L
+
                     val source = UriDataSource(context, Uri.parse(path))
                     val startTimeInUs = (1000 * (startTime ?: 0)).toLong()
                     val durationInUs = (1000 * (duration ?: 0)).toLong()
-                    val endTimeInUs = startTimeInUs + durationInUs
+                    var endTimeInUs = startTimeInUs + durationInUs
+                    
+                    Log.d(TAG, "startTimeInUs: $startTimeInUs, endTimeInUs: $endTimeInUs, durationInUs: $durationInUs, videoDurationUs: $videoDurationUs")
+                    if (endTimeInUs > videoDurationUs) {
+                        endTimeInUs = videoDurationUs
+                    }
+
                     ClipDataSource(source, startTimeInUs, endTimeInUs)
                 }else{
                     UriDataSource(context, Uri.parse(path))
                 }
-
 
                 transcodeFuture = Transcoder.into(destPath!!)
                         .addDataSource(dataSource)
